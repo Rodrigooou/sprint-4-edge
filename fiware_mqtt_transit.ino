@@ -1,8 +1,11 @@
-// TRANSIT - Semáforo Intelegente
-// Base do código feita por - Fábio Henrique Cabrini
-// Esse programa possibilita ligar e desligar o led onboard, além de mandar o status para o Broker MQTT possibilitando o Helix saber
-// se o led está ligado ou desligado
-// Leitura de sensor ultrassonico
+//Autor: Fábio Henrique Cabrini
+//Resumo: Esse programa possibilita ligar e desligar o led onboard, além de mandar o status para o Broker MQTT possibilitando o Helix saber
+//se o led está ligado ou desligado.
+//Revisões:
+//Rev1: 26-08-2023 Código portado para o ESP32 e para realizar a leitura de luminosidade e publicar o valor em um tópico aprorpiado do broker 
+//Autor Rev1: Lucas Demetrius Augusto 
+//Rev2: 28-08-2023 Ajustes para o funcionamento no FIWARE Descomplicado
+//Autor Rev2: Fábio Henrique Cabrini
 
 #include <WiFi.h>
 #include <PubSubClient.h> // Importa a Biblioteca PubSubClient
@@ -25,8 +28,8 @@
                                 
 
 // WIFI
-const char* SSID = "Wokwi-GUEST"; // SSID / nome da rede WI-FI que deseja se conectar, substituir para FIAP-IBM
-const char* PASSWORD = ""; // Senha da rede WI-FI que deseja se conectar, substituir por Challenge@23!
+const char* SSID = "Wokwi-GUEST"; // SSID / nome da rede WI-FI que deseja se conectar
+const char* PASSWORD = ""; // Senha da rede WI-FI que deseja se conectar
   
 // MQTT
 const char* BROKER_MQTT = "46.17.108.113"; //URL do broker MQTT que se deseja utilizar
@@ -54,6 +57,8 @@ void InitOutput(void);
 
 #define TRIG_PIN 12   // Pino Trig conectado ao D12
 #define ECHO_PIN 15   // Pino Echo conectado ao D15
+#define LED 5
+
 void setup() 
 {
     //inicializações:
@@ -61,6 +66,7 @@ void setup()
     initSerial();
     initWiFi();
     initMQTT();
+    pinMode(LED, OUTPUT);
     delay(5000);
     MQTT.publish(TOPICO_PUBLISH, "s|on");
     pinMode(TRIG_PIN, OUTPUT);
@@ -284,6 +290,11 @@ void loop()
     snprintf(msgBuffer, sizeof(msgBuffer), "%.2f", proximity);
     MQTT.publish(TOPICO_PUBLISH_2, msgBuffer);// Altere o tópico para o desejado
     
+    if(proximity> 100){
+      digitalWrite(LED, HIGH);
+    }if(proximity<100){
+      digitalWrite(LED, LOW);
+    }
     //keep-alive da comunicação com broker MQTT
     MQTT.loop();
 }

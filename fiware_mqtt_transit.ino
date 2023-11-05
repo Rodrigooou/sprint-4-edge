@@ -58,6 +58,7 @@ void InitOutput(void);
 #define TRIG_PIN 12   // Pino Trig conectado ao D12
 #define ECHO_PIN 15   // Pino Echo conectado ao D15
 #define LED 5
+#define LEDD 18
 
 void setup() 
 {
@@ -67,6 +68,7 @@ void setup()
     initWiFi();
     initMQTT();
     pinMode(LED, OUTPUT);
+    pinMode(LEDD, OUTPUT);
     delay(5000);
     MQTT.publish(TOPICO_PUBLISH, "s|on");
     pinMode(TRIG_PIN, OUTPUT);
@@ -290,11 +292,15 @@ void loop()
     snprintf(msgBuffer, sizeof(msgBuffer), "%.2f", proximity);
     MQTT.publish(TOPICO_PUBLISH_2, msgBuffer);// Altere o tópico para o desejado
     
-    if(proximity> 100){
+    if (proximity > 100) {
       digitalWrite(LED, HIGH);
-    }if(proximity<100){
+      digitalWrite(LEDD, LOW);
+    }
+    if (proximity < 100) {
+      digitalWrite(LEDD, HIGH);
       digitalWrite(LED, LOW);
     }
+
     //keep-alive da comunicação com broker MQTT
     MQTT.loop();
 }
